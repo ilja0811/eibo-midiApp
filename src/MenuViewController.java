@@ -25,6 +25,7 @@ public class MenuViewController implements Initializable {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/project-view.fxml"));
                 Parent root;
                 root = loader.load();
+                System.out.println("gittest");
 
                 // Create the new scene
                 Scene newScene = new Scene(root, 800, 450);
