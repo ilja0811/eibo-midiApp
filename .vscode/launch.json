@@ -16,7 +16,7 @@
             "name": "Launch App",
             "request": "launch",
             "mainClass": "App",
-            "vmArgs": "--module-path \"C:/Users/tkatc/Desktop/UNI/Semester 3/EIBO/Java Tools/javafx-sdk-19/lib\" --add-modules javafx.controls,javafx.fxml"
+            "vmArgs": "--module-path \"C:/Users/iljat/Desktop/IntelliJ Projects/Java Tools/javafx-sdk-19/lib\" --add-modules javafx.controls,javafx.fxml"
         }
     ]
 }
