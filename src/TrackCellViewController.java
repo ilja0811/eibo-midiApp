@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import javax.sound.midi.Instrument;
+import javax.sound.midi.Track;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -59,10 +60,13 @@ public class TrackCellViewController implements Initializable {
         this.trackCell = trackCell;
 
         trackIndexLabel.setText(String.valueOf(trackCell.getIndex() + 1));
-
         trackCell.indexProperty().addListener((observable, oldIndex, newIndex) -> {
             trackIndexLabel.setText(String.valueOf(newIndex.intValue() + 1));
         });
+    }
+
+    public void updateTrack(Track track) {
+
     }
 
     public void loadDropdown() {

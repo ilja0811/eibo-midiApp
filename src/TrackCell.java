@@ -9,15 +9,16 @@ import javafx.scene.control.ListCell;
 public class TrackCell extends ListCell<Track> {
 
     private Parent root;
+    private TrackCellViewController controller;
 
     public TrackCell(FruityProject project) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/track-cell-view.fxml"));
 
             root = loader.load();
-            TrackCellViewController controller = loader.getController();
-            controller.setTrackCell(this);
+            controller = loader.getController();
             controller.setProject(project);
+            controller.setTrackCell(this);
             controller.loadDropdown();
         } catch (IOException e) {
             e.printStackTrace();
@@ -28,7 +29,8 @@ public class TrackCell extends ListCell<Track> {
     protected void updateItem(Track item, boolean empty) {
         super.updateItem(item, empty);
 
-        if (!empty) {
+        if (item != null) {
+            controller.updateTrack(item);
             this.setGraphic(root);
         } else {
             this.setGraphic(null);

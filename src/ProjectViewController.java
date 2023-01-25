@@ -94,7 +94,7 @@ public class ProjectViewController implements Initializable {
         trackListviewEdit.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Track>() {
             @Override
             public void changed(ObservableValue<? extends Track> observable, Track oldTrack, Track newTrack) {
-                System.out.println(newTrack);
+                System.out.println("Selected Track " + newTrack);
             }
         });
 
@@ -141,8 +141,10 @@ public class ProjectViewController implements Initializable {
 
         removeInstrButton.setOnAction(event -> {
             Track selectedTrack = trackListviewEdit.getSelectionModel().getSelectedItem();
+            System.out.println("Deleted Track: " + selectedTrack);
             project.deleteTrack(selectedTrack);
-            trackListviewEdit.getItems().remove(selectedTrack);
+            tracksInEdit.remove(selectedTrack);
+            trackListviewEdit.refresh();
         });
 
         midiDevButton.setOnAction(event -> {
@@ -152,7 +154,7 @@ public class ProjectViewController implements Initializable {
         saveButton.setOnAction(event -> {
             Alert alert;
 
-            trackListviewPlay.getItems().clear();
+            tracksInPlay.clear();
             if (!project.getTracks().isEmpty()) {
                 tracksInPlay.addAll(project.getTracks());
                 alert = new Alert(AlertType.INFORMATION,
