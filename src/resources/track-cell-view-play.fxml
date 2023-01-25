@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+
+<Pane minHeight="-Infinity" prefHeight="50.0" prefWidth="760.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="TrackCellViewPlayController">
+   <children>
+      <HBox alignment="CENTER_LEFT" prefHeight="50.0" spacing="10.0">
+         <children>
+            <Label fx:id="trackIndexLabel" alignment="CENTER" maxWidth="15.0" minWidth="15.0" text="1" textAlignment="CENTER">
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Label>
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+               <children>
+                  <Label fx:id="trackName" minWidth="-Infinity" prefHeight="30.0" prefWidth="200.0" styleClass="track-label" stylesheets="@style.css" text="Track">
+                     <padding>
+                        <Insets left="10.0" right="10.0" />
+                     </padding>
+                  </Label>
+                  <Label fx:id="instrName" minWidth="-Infinity" prefHeight="30.0" prefWidth="150.0" styleClass="track-label" stylesheets="@style.css" text="Instrument">
+                     <padding>
+                        <Insets left="10.0" right="10.0" />
+                     </padding>
+                  </Label>
+                  <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="250.0">
+                     <children>
+                        <ToggleButton fx:id="muteButton" mnemonicParsing="false" text="Mute" />
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets left="15.0" right="15.0" />
+         </padding>
+      </HBox>
+   </children>
+</Pane>

@@ -87,7 +87,7 @@ public class ProjectViewController implements Initializable {
         trackListviewEdit.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
             @Override
             public ListCell<Track> call(ListView<Track> param) {
-                return new TrackCell(project);
+                return new TrackCell(project, TrackCellType.EDIT);
             }
         });
 
@@ -101,7 +101,7 @@ public class ProjectViewController implements Initializable {
         trackListviewPlay.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
             @Override
             public ListCell<Track> call(ListView<Track> param) {
-                return new TrackCell(project);
+                return new TrackCell(project, TrackCellType.PLAY);
             }
         });
 
@@ -141,9 +141,8 @@ public class ProjectViewController implements Initializable {
 
         removeInstrButton.setOnAction(event -> {
             Track selectedTrack = trackListviewEdit.getSelectionModel().getSelectedItem();
-            System.out.println("Deleted Track: " + selectedTrack);
-            project.deleteTrack(selectedTrack);
             tracksInEdit.remove(selectedTrack);
+            project.deleteTrack(selectedTrack);
             trackListviewEdit.refresh();
         });
 
@@ -155,10 +154,12 @@ public class ProjectViewController implements Initializable {
             Alert alert;
 
             tracksInPlay.clear();
-            if (!project.getTracks().isEmpty()) {
-                tracksInPlay.addAll(project.getTracks());
+
+            if (!project.getValidTracks().isEmpty()) {
+                tracksInPlay.addAll(project.getValidTracks().keySet());
+
                 alert = new Alert(AlertType.INFORMATION,
-                        "Successfully added tracks: " + project.getTracks().size(), ButtonType.OK);
+                        "Successfully added tracks: " + project.getValidTracks().size(), ButtonType.OK);
                 alert.showAndWait();
             } else {
                 alert = new Alert(AlertType.ERROR,

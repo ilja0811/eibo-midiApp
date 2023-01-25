@@ -2,6 +2,8 @@
     -dark-black: #000000;
     -black: #1c1c1e;
     -white: #fefefe;
+    -white-op1: rgba(254, 254, 254, 0.1);
+    -white-op2: rgba(254, 254, 254, 0.2);
     -grey: #c3c3c5;
     -dark-grey: #8c8c8e;
     -light-grey: #dddddf;
@@ -12,7 +14,8 @@
     -fx-border-insets: 0;
 }
 
-.button {
+.button,
+.toggle-button {
     -fx-background-color: -light-grey;
     -fx-text-fill: -black;
     -fx-border-color: none;
@@ -22,7 +25,9 @@
 }
 
 .button:hover,
-.button:focus {
+.button:focus,
+.toggle-button:hover,
+.toggle-button:focus {
     -fx-background-color: -black;
     -fx-text-fill: -white;
 }
@@ -37,7 +42,7 @@
 }
 
 .list-view {
-    -fx-background-color: -white;
+    -fx-background-color: -gradient;
 }
 
 .label {
@@ -45,7 +50,7 @@
 }
 
 .tab-pane *.tab-header-area *.tab-header-background {
-    -fx-background-color: -light-grey;
+    -fx-background-color: -gradient;
 }
 
 .tab {
@@ -106,4 +111,21 @@
     -fx-pref-width: 12;
     -fx-background-color: -dark-grey;
     -fx-background-radius: 5;
+}
+
+.list-cell:odd {
+    -fx-background-color: transparent;
+}
+
+.list-cell:even {
+    -fx-background-color: -white-op1;
+}
+
+.list-cell:filled:selected:focused,
+.list-cell:filled:selected {
+    -fx-background-color: -white;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: -white-op2;
 }
