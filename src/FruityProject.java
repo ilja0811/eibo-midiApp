@@ -1,5 +1,8 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 import javax.sound.midi.*;
 
@@ -14,10 +17,17 @@ public class FruityProject {
     private Instrument[] instruments;
     private Sequencer sequencer;
 
+    private MidiDevice device;
+    private MidiInputReceiver receiver;
+    private List<MidiDevice.Info> validMidisInfos;
+
+    private MidiChannel channel;
+
     private SimpleFloatProperty bpm;
     private SimpleLongProperty length;
     private SimpleLongProperty time;
 
+    private List<Track> validTracks;
     private final float defaultBPM = 140;
 
     public FruityProject() {
@@ -29,6 +39,9 @@ public class FruityProject {
             soundbank = synth.getDefaultSoundbank();
             synth.loadAllInstruments(soundbank);
             instruments = synth.getLoadedInstruments();
+
+            // Get a MIDI channel
+            channel = synth.getChannels()[10];
 
             sequencer = MidiSystem.getSequencer();
 
@@ -54,6 +67,8 @@ public class FruityProject {
                     }
                 }
             });
+
+            validTracks = new ArrayList<>();
         } catch (MidiUnavailableException | InvalidMidiDataException e) {
             e.printStackTrace();
         }
@@ -142,7 +157,7 @@ public class FruityProject {
             while (sequencer.isRunning()) {
                 time.set((long) ((sequencer.getTickPosition() / (sequence.getResolution()
                         * (sequencer.getTempoInBPM() / 60)))));
-                System.out.println(time.get());
+                // System.out.println(time.get());
             }
         }).start();
     }
@@ -163,8 +178,118 @@ public class FruityProject {
         }
     }
 
+    public void selectMidiDevice() {
+        new Thread(() -> {
+            try {
+                if (receiver != null) {
+                    receiver.close();
+                }
+
+                // Get a list of available MIDI devices
+                MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
+                validMidisInfos = new ArrayList<>();
+
+                // Evaluate only valid MIDIs that have MIDI OUT PORT
+                for (int i = 0; i < infos.length; i++) {
+                    device = MidiSystem.getMidiDevice(infos[i]);
+                    device.open();
+                    if (device.getMaxTransmitters() != 0) {
+                        validMidisInfos.add(infos[i]);
+                    }
+                    device.close();
+                }
+
+                for (MidiDevice.Info i : validMidisInfos) {
+                    System.out.println(validMidisInfos.indexOf(i) + ": " + i.getName());
+                }
+
+                // Prompt the user to select a MIDI device
+                Scanner scanner = new Scanner(System.in);
+
+                System.out.print("Select a MIDI device: ");
+                if (scanner.hasNextInt()) {
+                    System.out.println("Has next int");
+                    int deviceIndex = scanner.nextInt();
+                    loadMidiDevice(deviceIndex);
+                }
+                scanner.close();
+            } catch (MidiUnavailableException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void loadMidiDevice(int index) {
+        try {
+            device = MidiSystem.getMidiDevice(validMidisInfos.get(index));
+            device.open();
+
+            // Create a listener for MIDI messages
+            receiver = new MidiInputReceiver(channel);
+            device.getTransmitter().setReceiver(receiver);
+
+            System.out.println("Listening for MIDI input...");
+        } catch (MidiUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class MidiInputReceiver implements Receiver {
+        private MidiChannel channel;
+
+        public MidiInputReceiver(MidiChannel channel) {
+            this.channel = channel;
+        }
+
+        public void send(MidiMessage message, long timeStamp) {
+            if (message instanceof ShortMessage) {
+                ShortMessage shortMessage = (ShortMessage) message;
+                int command = shortMessage.getCommand();
+                int note = shortMessage.getData1();
+
+                if (command == ShortMessage.NOTE_ON) {
+                    int velocity = shortMessage.getData2();
+                    channel.noteOn(note, velocity);
+                } else if (command == ShortMessage.NOTE_OFF) {
+                    channel.noteOff(note);
+                }
+            }
+        }
+
+        @Override
+        public void close() {
+            for (int i = 0; i < 128; i++) {
+                channel.noteOff(i);
+            }
+            synth.close();
+            device.close();
+        }
+    }
+
     public void closeAll() {
         synth.close();
         sequencer.close();
+        if (receiver != null) {
+            receiver.close();
+        }
+    }
+
+    public void deleteEmptyTracks() {
+        for (Track t : sequence.getTracks()) {
+            if (t.size() < 3) {
+                sequence.deleteTrack(t);
+            }
+        }
+    }
+
+    public List<Track> getTracks() {
+        validTracks.clear();
+
+        for (Track t : sequence.getTracks()) {
+            if (t.size() >= 3) {
+                validTracks.add(t);
+            }
+        }
+        return validTracks;
     }
 }

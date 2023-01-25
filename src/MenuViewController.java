@@ -25,7 +25,6 @@ public class MenuViewController implements Initializable {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/project-view.fxml"));
                 Parent root;
                 root = loader.load();
-                System.out.println("gittest");
 
                 // Create the new scene
                 Scene newScene = new Scene(root, 800, 450);
@@ -33,6 +32,12 @@ public class MenuViewController implements Initializable {
                 // Get the current stage and set the new scene
                 Stage stage = (Stage) newProjectButton.getScene().getWindow();
                 stage.setScene(newScene);
+                
+                // close all open business resources (synth, midi device, etc.) when closing application
+                stage.setOnCloseRequest(windowEvent -> {
+                    ProjectViewController controller = loader.getController();
+                    controller.exit();
+                });
             } catch (IOException e) {
                 e.printStackTrace();
             }

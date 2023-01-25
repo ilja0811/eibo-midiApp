@@ -25,9 +25,6 @@ public class TrackCellViewController implements Initializable {
     private Label presetName;
 
     @FXML
-    private Button editNameButton;
-
-    @FXML
     private Label trackIndexLabel;
     /* ----- */
 
@@ -66,10 +63,6 @@ public class TrackCellViewController implements Initializable {
         trackCell.indexProperty().addListener((observable, oldIndex, newIndex) -> {
             trackIndexLabel.setText(String.valueOf(newIndex.intValue() + 1));
         });
-    }
-
-    public Button getEditNameButton() {
-        return editNameButton;
     }
 
     public void loadDropdown() {

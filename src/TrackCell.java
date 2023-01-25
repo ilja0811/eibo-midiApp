@@ -4,7 +4,6 @@ import javax.sound.midi.Track;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 
 public class TrackCell extends ListCell<Track> {
@@ -20,15 +19,6 @@ public class TrackCell extends ListCell<Track> {
             controller.setTrackCell(this);
             controller.setProject(project);
             controller.loadDropdown();
-            Button editButton = controller.getEditNameButton();
-
-            selectedProperty().addListener(event -> {
-                if (selectedProperty().getValue()) {
-                    editButton.setDisable(false);
-                } else {
-                    editButton.setDisable(true);
-                }
-            });
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -13,13 +13,16 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -27,10 +30,16 @@ public class ProjectViewController implements Initializable {
 
     /* FXML */
     @FXML
+    private Button midiDevButton;
+
+    @FXML
     private Button addInstrButton;
 
     @FXML
-    private ListView<Track> presetList;
+    private ListView<Track> trackListviewEdit;
+
+    @FXML
+    private ListView<Track> trackListviewPlay;
 
     @FXML
     private Button removeInstrButton;
@@ -61,6 +70,9 @@ public class ProjectViewController implements Initializable {
 
     @FXML
     private Label lengthLabel;
+
+    @FXML
+    private Button saveButton;
     /* ----- */
 
     private FruityProject project;
@@ -69,19 +81,27 @@ public class ProjectViewController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         project = new FruityProject();
 
-        ObservableList<Track> presetListModel = presetList.getItems();
+        ObservableList<Track> tracksInEdit = trackListviewEdit.getItems();
+        ObservableList<Track> tracksInPlay = trackListviewPlay.getItems();
 
-        presetList.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
+        trackListviewEdit.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
             @Override
             public ListCell<Track> call(ListView<Track> param) {
                 return new TrackCell(project);
             }
         });
 
-        presetList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Track>() {
+        trackListviewEdit.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Track>() {
             @Override
             public void changed(ObservableValue<? extends Track> observable, Track oldTrack, Track newTrack) {
                 System.out.println(newTrack);
+            }
+        });
+
+        trackListviewPlay.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
+            @Override
+            public ListCell<Track> call(ListView<Track> param) {
+                return new TrackCell(project);
             }
         });
 
@@ -90,12 +110,6 @@ public class ProjectViewController implements Initializable {
         });
 
         bpmLabel.textProperty().bind(project.bpm().asString("%.0f"));
-
-        /*
-         * posSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-         * project.setTickPosition(newValue.longValue());
-         * });
-         */
 
         project.time().addListener((observable, oldValue, newValue) -> {
             posSlider.setValue(newValue.longValue());
@@ -118,30 +132,58 @@ public class ProjectViewController implements Initializable {
         });
 
         menuButton.setOnAction(event -> {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/menu-view.fxml"));
-                Parent root;
-                root = loader.load();
-
-                // Create the new scene
-                Scene newScene = new Scene(root, 800, 450);
-
-                // Get the current stage and set the new scene
-                Stage stage = (Stage) menuButton.getScene().getWindow();
-                stage.setScene(newScene);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            loadMenuView();
         });
 
         addInstrButton.setOnAction(event -> {
-            presetListModel.add(project.addTrack());
+            tracksInEdit.add(project.addTrack());
         });
 
         removeInstrButton.setOnAction(event -> {
-            Track selectedTrack = presetList.getSelectionModel().getSelectedItem();
+            Track selectedTrack = trackListviewEdit.getSelectionModel().getSelectedItem();
             project.deleteTrack(selectedTrack);
-            presetList.getItems().remove(selectedTrack);
+            trackListviewEdit.getItems().remove(selectedTrack);
         });
+
+        midiDevButton.setOnAction(event -> {
+            project.selectMidiDevice();
+        });
+
+        saveButton.setOnAction(event -> {
+            Alert alert;
+
+            trackListviewPlay.getItems().clear();
+            if (!project.getTracks().isEmpty()) {
+                tracksInPlay.addAll(project.getTracks());
+                alert = new Alert(AlertType.INFORMATION,
+                        "Successfully added tracks: " + project.getTracks().size(), ButtonType.OK);
+                alert.showAndWait();
+            } else {
+                alert = new Alert(AlertType.ERROR,
+                        "No valid tracks in selection. Successfully added tracks: 0", ButtonType.OK);
+                alert.showAndWait();
+            }
+        });
+    }
+
+    public void loadMenuView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/menu-view.fxml"));
+            Parent root;
+            root = loader.load();
+
+            // Create the new scene
+            Scene newScene = new Scene(root, 800, 450);
+
+            // Get the current stage and set the new scene
+            Stage stage = App.getStage();
+            stage.setScene(newScene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void exit() {
+        project.closeAll();
     }
 }
