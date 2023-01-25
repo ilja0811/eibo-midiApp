@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import javax.sound.midi.Instrument;
+import javax.sound.midi.Track;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -30,24 +31,30 @@ public class TrackCellViewController implements Initializable {
 
     private FruityProject project;
 
+    private Track track;
+
     private TrackCell trackCell;
+
+    private final String instrDefaultVal = "Preset";
+    private final String nameDefaultVal = "Track";
+    private final String midiDefaultVal = "Import MIDI";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        instrDropdown.setValue("Preset");
-
         midiButton.setOnAction(event -> {
             File file = midiFileChooser();
 
             if (file != null) {
-                project.loadTrackMidi(trackCell.getIndex(), file.getAbsolutePath());
-                presetName.setText(file.getName().split(".mid")[0]);
-                midiButton.setText(file.getName());
+                project.loadTrackMidi(track, file.getAbsolutePath());
+                presetName.setText(project.getTracks().get(track).getName());
+                midiButton.setText(project.getTracks().get(track).getMidiFile());
             }
         });
 
         instrDropdown.valueProperty().addListener(event -> {
-            project.loadTrackInstr(trackCell.getIndex(), instrDropdown.getItems().indexOf(instrDropdown.getValue()));
+            if (!instrDropdown.getValue().equals(instrDefaultVal)) {
+                project.loadTrackInstr(track, instrDropdown.getItems().indexOf(instrDropdown.getValue()));
+            }
         });
     }
 
@@ -57,24 +64,46 @@ public class TrackCellViewController implements Initializable {
 
     public void setTrackCell(TrackCell trackCell) {
         this.trackCell = trackCell;
-
-        trackIndexLabel.setText(String.valueOf(trackCell.getIndex() + 1));
-
-        trackCell.indexProperty().addListener((observable, oldIndex, newIndex) -> {
-            trackIndexLabel.setText(String.valueOf(newIndex.intValue() + 1));
-        });
     }
 
-    public void loadDropdown() {
+    public void updateTrack(Track track) {
+        this.track = track;
+
+        String name = project.getTracks().get(track).getName();
+        String instrument = project.getTracks().get(track).getInstrument();
+        String midiFile = project.getTracks().get(track).getMidiFile();
+
+        trackIndexLabel.setText(String.valueOf(trackCell.indexProperty().get() + 1));
+
+        if (name != null) {
+            presetName.setText(name);
+        } else {
+            presetName.setText(nameDefaultVal);
+        }
+        if (instrument != null) {
+            instrDropdown.setValue(instrument);
+        } else {
+            instrDropdown.setValue(instrDefaultVal);
+        }
+        if (midiFile != null) {
+            midiButton.setText(midiFile);
+        } else {
+            midiButton.setText(midiDefaultVal);
+        }
+    }
+
+    public void loadDefaultTrackState() {
         for (Instrument i : project.getInstruments()) {
             instrDropdown.getItems().add(i.getName());
         }
+        presetName.setText(nameDefaultVal);
+        instrDropdown.setValue(instrDefaultVal);
+        midiButton.setText(midiDefaultVal);
     }
 
     public File midiFileChooser() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select a MIDI file");
-        // fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.setInitialDirectory(new File("midis"));
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("MIDI Files", "*.mid"));
 

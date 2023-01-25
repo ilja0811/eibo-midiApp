@@ -87,21 +87,21 @@ public class ProjectViewController implements Initializable {
         trackListviewEdit.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
             @Override
             public ListCell<Track> call(ListView<Track> param) {
-                return new TrackCell(project);
+                return new TrackCell(project, TrackCellType.EDIT);
             }
         });
 
         trackListviewEdit.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Track>() {
             @Override
             public void changed(ObservableValue<? extends Track> observable, Track oldTrack, Track newTrack) {
-                System.out.println(newTrack);
+                System.out.println("Selected Track " + newTrack);
             }
         });
 
         trackListviewPlay.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
             @Override
             public ListCell<Track> call(ListView<Track> param) {
-                return new TrackCell(project);
+                return new TrackCell(project, TrackCellType.PLAY);
             }
         });
 
@@ -141,8 +141,9 @@ public class ProjectViewController implements Initializable {
 
         removeInstrButton.setOnAction(event -> {
             Track selectedTrack = trackListviewEdit.getSelectionModel().getSelectedItem();
+            tracksInEdit.remove(selectedTrack);
             project.deleteTrack(selectedTrack);
-            trackListviewEdit.getItems().remove(selectedTrack);
+            trackListviewEdit.refresh();
         });
 
         midiDevButton.setOnAction(event -> {
@@ -152,11 +153,13 @@ public class ProjectViewController implements Initializable {
         saveButton.setOnAction(event -> {
             Alert alert;
 
-            trackListviewPlay.getItems().clear();
-            if (!project.getTracks().isEmpty()) {
-                tracksInPlay.addAll(project.getTracks());
+            tracksInPlay.clear();
+
+            if (!project.getValidTracks().isEmpty()) {
+                tracksInPlay.addAll(project.getValidTracks().keySet());
+
                 alert = new Alert(AlertType.INFORMATION,
-                        "Successfully added tracks: " + project.getTracks().size(), ButtonType.OK);
+                        "Successfully added tracks: " + project.getValidTracks().size(), ButtonType.OK);
                 alert.showAndWait();
             } else {
                 alert = new Alert(AlertType.ERROR,
