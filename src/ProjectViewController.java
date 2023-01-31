@@ -1,8 +1,12 @@
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javax.sound.midi.Track;
+import javax.sound.midi.MidiDevice.Info;
 
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -16,6 +20,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -73,6 +78,9 @@ public class ProjectViewController implements Initializable {
 
     @FXML
     private Button saveButton;
+
+    @FXML
+    private Button exportButton;
     /* ----- */
 
     private FruityProject project;
@@ -128,10 +136,19 @@ public class ProjectViewController implements Initializable {
         });
 
         playPauseButton.setOnAction(event -> {
-            project.play();
+            if (project.isPlaying()) {
+                project.stop();
+                playPauseButton.setText("Play");
+            } else {
+                project.play();
+                if (project.isPlaying()) {
+                    playPauseButton.setText("Stop");
+                }
+            }
         });
 
         menuButton.setOnAction(event -> {
+            project.closeAll();
             loadMenuView();
         });
 
@@ -147,7 +164,21 @@ public class ProjectViewController implements Initializable {
         });
 
         midiDevButton.setOnAction(event -> {
-            project.selectMidiDevice();
+            List<String> choices = new ArrayList<>();
+
+            for (Info i : project.getMidiDevices()) {
+                choices.add(i.getName());
+            }
+            
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
+            dialog.setTitle("Choose a MIDI device");
+            dialog.setHeaderText("Choose one of the following devices:");
+            dialog.setContentText("Devices:");
+
+            Optional<String> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                project.loadMidiDevice(choices.indexOf(result.get()));
+            } 
         });
 
         saveButton.setOnAction(event -> {
