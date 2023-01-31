@@ -1,9 +1,17 @@
+package scenes;
+
+import uicomponents.TrackCellType;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javax.sound.midi.Track;
+import javax.sound.midi.MidiDevice.Info;
 
+import application.App;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -16,6 +24,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -23,17 +32,22 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import logic.FruityProject;
+import resources.HelperClass;
+import uicomponents.TrackCell;
 
 public class ProjectViewController implements Initializable {
 
     /* FXML */
     @FXML
-    private Button midiDevButton;
+    private Button loadMidiDevButton;
 
     @FXML
-    private Button addInstrButton;
+    private Button addTrackButton;
 
     @FXML
     private ListView<Track> trackListviewEdit;
@@ -42,7 +56,7 @@ public class ProjectViewController implements Initializable {
     private ListView<Track> trackListviewPlay;
 
     @FXML
-    private Button removeInstrButton;
+    private Button removeTrackButton;
 
     @FXML
     private Button playPauseButton;
@@ -73,6 +87,16 @@ public class ProjectViewController implements Initializable {
 
     @FXML
     private Button saveButton;
+
+    @FXML
+    private ImageView playPauseButtonImg;
+
+    @FXML
+    private Button stopButton;
+
+    @FXML
+    private ImageView stopButtonImg;
+
     /* ----- */
 
     private FruityProject project;
@@ -87,21 +111,21 @@ public class ProjectViewController implements Initializable {
         trackListviewEdit.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
             @Override
             public ListCell<Track> call(ListView<Track> param) {
-                return new TrackCell(project);
+                return new TrackCell(project, TrackCellType.EDIT);
             }
         });
 
         trackListviewEdit.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Track>() {
             @Override
             public void changed(ObservableValue<? extends Track> observable, Track oldTrack, Track newTrack) {
-                System.out.println(newTrack);
+                // pass
             }
         });
 
         trackListviewPlay.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
             @Override
             public ListCell<Track> call(ListView<Track> param) {
-                return new TrackCell(project);
+                return new TrackCell(project, TrackCellType.PLAY);
             }
         });
 
@@ -128,35 +152,64 @@ public class ProjectViewController implements Initializable {
         });
 
         playPauseButton.setOnAction(event -> {
-            project.play();
+            if (project.isPlaying()) {
+                project.pause();
+                playPauseButtonImg.setImage(new Image("assets/round_play_arrow_white_48dp.png"));
+            } else {
+                project.play();
+                if (project.isPlaying()) {
+                    playPauseButtonImg.setImage(new Image("assets/round_pause_white_48dp.png"));
+                } else {
+                    Alert alert = new Alert(AlertType.ERROR,"No valid tracks in selection. Playback failed.", ButtonType.OK);
+                    alert.showAndWait();
+                }
+            }
         });
 
         menuButton.setOnAction(event -> {
+            project.closeAll();
             loadMenuView();
         });
 
-        addInstrButton.setOnAction(event -> {
+        addTrackButton.setOnAction(event -> {
             tracksInEdit.add(project.addTrack());
         });
 
-        removeInstrButton.setOnAction(event -> {
+        removeTrackButton.setOnAction(event -> {
             Track selectedTrack = trackListviewEdit.getSelectionModel().getSelectedItem();
+            tracksInEdit.remove(selectedTrack);
             project.deleteTrack(selectedTrack);
-            trackListviewEdit.getItems().remove(selectedTrack);
+            trackListviewEdit.refresh();
         });
 
-        midiDevButton.setOnAction(event -> {
-            project.selectMidiDevice();
+        loadMidiDevButton.setOnAction(event -> {
+            List<String> choices = new ArrayList<>();
+
+            for (Info i : project.getMidiDevices()) {
+                choices.add(i.getName());
+            }
+
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
+            dialog.setTitle("Choose a MIDI device");
+            dialog.setHeaderText("Choose one of the following devices:");
+            dialog.setContentText("Devices:");
+
+            Optional<String> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                project.loadMidiDevice(choices.indexOf(result.get()));
+            }
         });
 
         saveButton.setOnAction(event -> {
             Alert alert;
 
-            trackListviewPlay.getItems().clear();
-            if (!project.getTracks().isEmpty()) {
-                tracksInPlay.addAll(project.getTracks());
+            tracksInPlay.clear();
+
+            if (!project.getValidTracks().isEmpty()) {
+                tracksInPlay.addAll(project.getValidTracks().keySet());
+
                 alert = new Alert(AlertType.INFORMATION,
-                        "Successfully added tracks: " + project.getTracks().size(), ButtonType.OK);
+                        "Successfully added tracks: " + project.getValidTracks().size(), ButtonType.OK);
                 alert.showAndWait();
             } else {
                 alert = new Alert(AlertType.ERROR,
@@ -164,11 +217,17 @@ public class ProjectViewController implements Initializable {
                 alert.showAndWait();
             }
         });
+
+        stopButton.setOnAction(event -> {
+            if (project.isPlaying()) {
+                project.stop();
+            }
+        });
     }
 
     public void loadMenuView() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/menu-view.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("menu-view.fxml"));
             Parent root;
             root = loader.load();
 

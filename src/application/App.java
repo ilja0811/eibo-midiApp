@@ -1,3 +1,4 @@
+package application;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,12 +16,12 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         App.stage = stage;
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/menu-view.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("../scenes/menu-view.fxml"));
         Parent root = loader.load();
 
         Scene scene = new Scene(root, 800, 450);
 
-        stage.setTitle("Projekt");
+        stage.setTitle("MIDI Application");
         stage.setScene(scene);
         stage.show();
     }

@@ -1,3 +1,4 @@
+package scenes;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -13,16 +14,13 @@ import javafx.stage.Stage;
 public class MenuViewController implements Initializable {
 
     @FXML
-    private Button loadProjectButton;
-
-    @FXML
     private Button newProjectButton;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         newProjectButton.setOnAction(event -> {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/project-view.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("project-view.fxml"));
                 Parent root;
                 root = loader.load();
 
