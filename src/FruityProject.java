@@ -1,13 +1,23 @@
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
 import javax.sound.midi.*;
+import javax.sound.midi.MidiDevice.Info;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.TargetDataLine;
 
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleLongProperty;
@@ -138,7 +148,7 @@ public class FruityProject {
 
     public void startRunningThread() {
         new Thread(() -> {
-            while (sequencer.isRunning()) {
+            while (isPlaying()) {
                 time.set((long) ((sequencer.getTickPosition() / (sequence.getResolution()
                         * (sequencer.getTempoInBPM() / 60)))));
                 // System.out.println(time.get());
@@ -147,63 +157,50 @@ public class FruityProject {
     }
 
     public void play() {
-        try {
-            sequencer.open();
-            sequencer.setSequence(sequence);
+        if (getValidTracks().size() != 0) {
+            try {
+                sequencer.open();
+                sequencer.setSequence(sequence);
 
-            length.set(
-                    (long) ((sequencer.getTickLength()
-                            / (sequence.getResolution() * (sequencer.getTempoInBPM() / 60)))));
+                length.set(
+                        (long) ((sequencer.getTickLength()
+                                / (sequence.getResolution() * (sequencer.getTempoInBPM() / 60)))));
 
-            sequencer.start();
-            startRunningThread();
-        } catch (MidiUnavailableException | InvalidMidiDataException e) {
-            e.printStackTrace();
+                sequencer.start();
+                startRunningThread();
+            } catch (MidiUnavailableException | InvalidMidiDataException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public void selectMidiDevice() {
-        new Thread(() -> {
-            try {
-                if (receiver != null) {
-                    receiver.close();
-                }
-
-                // Get a list of available MIDI devices
-                MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
-                validMidisInfos = new ArrayList<>();
-
-                // Evaluate only valid MIDIs that have MIDI OUT PORT
-                for (int i = 0; i < infos.length; i++) {
-                    device = MidiSystem.getMidiDevice(infos[i]);
-                    device.open();
-                    if (device.getMaxTransmitters() != 0) {
-                        validMidisInfos.add(infos[i]);
-                    }
-                    device.close();
-                }
-
-                for (MidiDevice.Info i : validMidisInfos) {
-                    System.out.println(validMidisInfos.indexOf(i) + ": " + i.getName());
-                }
-
-                // Prompt the user to select a MIDI device
-                Scanner scanner = new Scanner(System.in);
-
-                System.out.print("Select a MIDI device: ");
-                if (scanner.hasNextInt()) {
-                    System.out.println("Has next int");
-                    int deviceIndex = scanner.nextInt();
-                    loadMidiDevice(deviceIndex);
-                }
-                scanner.close();
-            } catch (MidiUnavailableException e) {
-                e.printStackTrace();
+    public List<Info> getMidiDevices() {
+        try {
+            if (receiver != null) {
+                receiver.close();
             }
-        }).start();
+            // Get a list of available MIDI devices
+            MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
+            validMidisInfos = new ArrayList<>();
+
+            // Evaluate only valid MIDIs that have MIDI OUT PORT
+            for (int i = 0; i < infos.length; i++) {
+                device = MidiSystem.getMidiDevice(infos[i]);
+                device.open();
+                if (device.getMaxTransmitters() != 0) {
+                    validMidisInfos.add(infos[i]);
+                }
+                device.close();
+            }
+
+            return validMidisInfos;
+        } catch (MidiUnavailableException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    private void loadMidiDevice(int index) {
+    public void loadMidiDevice(int index) {
         try {
             device = MidiSystem.getMidiDevice(validMidisInfos.get(index));
             device.open();
@@ -211,8 +208,6 @@ public class FruityProject {
             // Create a listener for MIDI messages
             receiver = new MidiInputReceiver(channel);
             device.getTransmitter().setReceiver(receiver);
-
-            System.out.println("Listening for MIDI input...");
         } catch (MidiUnavailableException e) {
             e.printStackTrace();
         }
@@ -245,16 +240,7 @@ public class FruityProject {
             for (int i = 0; i < 128; i++) {
                 channel.noteOff(i);
             }
-            synth.close();
             device.close();
-        }
-    }
-
-    public void deleteEmptyTracks() {
-        for (Track t : sequence.getTracks()) {
-            if (t.size() < 3) {
-                sequence.deleteTrack(t);
-            }
         }
     }
 
@@ -264,6 +250,14 @@ public class FruityProject {
 
     public boolean trackIsMuted(Track track) {
         return sequencer.getTrackMute(Arrays.asList(sequence.getTracks()).indexOf(track));
+    }
+
+    public boolean isPlaying() {
+        return sequencer != null && sequencer.isRunning();
+    }
+
+    public void stop() {
+        sequencer.stop();
     }
 
     public void closeAll() {
@@ -289,6 +283,14 @@ public class FruityProject {
 
     public SimpleLongProperty length() {
         return length;
+    }
+
+    public void deleteEmptyTracks() {
+        tracks.forEach((k, v) -> {
+            if (v.isNull()) {
+                sequence.deleteTrack(k);
+            }
+        });
     }
 
     /*

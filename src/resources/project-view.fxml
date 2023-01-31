@@ -193,17 +193,22 @@
                                     <Font size="14.0" />
                                  </font>
                               </Button>
-                              <HBox alignment="CENTER" spacing="7.5">
+                              <VBox alignment="CENTER">
                                  <children>
-                                    <Label fx:id="posLabel" alignment="CENTER" minWidth="-Infinity" prefWidth="30.0" text="0:00" />
-                                    <Slider fx:id="posSlider" blockIncrement="0.0" majorTickUnit="1.0" minorTickCount="0" prefHeight="60.0" prefWidth="150.0" />
-                                    <Label fx:id="lengthLabel" alignment="CENTER" minWidth="-Infinity" prefWidth="30.0" text="0:00" />
+                                    <Button fx:id="playPauseButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="50.0" stylesheets="@style.css" text="Play">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Button>
+                                    <HBox alignment="BOTTOM_CENTER" spacing="7.5">
+                                       <children>
+                                          <Label fx:id="posLabel" alignment="CENTER" minWidth="-Infinity" prefWidth="30.0" text="0:00" />
+                                          <Slider fx:id="posSlider" blockIncrement="0.0" majorTickUnit="1.0" minorTickCount="0" prefWidth="200.0" />
+                                          <Label fx:id="lengthLabel" alignment="CENTER" minWidth="-Infinity" prefWidth="30.0" text="0:00" />
+                                       </children>
+                                    </HBox>
                                  </children>
-                              </HBox>
-                              <Button fx:id="playPauseButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="50.0" stylesheets="@style.css" text="Play">
-                                 <font>
-                                    <Font size="14.0" />
-                                 </font></Button>
+                              </VBox>
                            </children>
                         </HBox>
                      </children>
