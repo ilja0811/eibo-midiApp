@@ -10,8 +10,8 @@ public class MidiPlayer extends Application {
 
     private static Stage stage;
 
-    private final String APP_TITLE = "MIDI Player";
-    private final String FXML_PATH = "../scenes/menu-view.fxml";
+    private static final String APP_TITLE = "MIDI Player";
+    private static final String FXML_PATH = "../scenes/menu-view.fxml";
 
     public static void main(String[] args) {
         launch();
