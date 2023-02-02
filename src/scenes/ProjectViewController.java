@@ -12,7 +12,7 @@ import javax.sound.midi.Instrument;
 import javax.sound.midi.Track;
 import javax.sound.midi.MidiDevice.Info;
 
-import application.App;
+import application.MidiPlayer;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -247,7 +247,7 @@ public class ProjectViewController implements Initializable {
             Scene newScene = new Scene(root, 800, 450);
 
             // Get the current stage and set the new scene
-            Stage stage = App.getStage();
+            Stage stage = MidiPlayer.getStage();
             stage.setScene(newScene);
         } catch (IOException e) {
             e.printStackTrace();

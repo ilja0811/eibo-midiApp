@@ -1,6 +1,6 @@
 package uicomponents;
 
-import application.App;
+import application.MidiPlayer;
 import logic.Project;
 import java.io.File;
 import java.net.URL;
@@ -124,6 +124,6 @@ public class TrackCellViewEditController implements Initializable {
         midiFileChooser.setInitialDirectory(new File(FILE_CHOOSER_INIT_DIR));
         midiFileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("MIDI Files", "*.mid"));
 
-        return midiFileChooser.showOpenDialog(App.getStage());
+        return midiFileChooser.showOpenDialog(MidiPlayer.getStage());
     }
 }

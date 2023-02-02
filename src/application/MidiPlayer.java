@@ -6,7 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class App extends Application {
+public class MidiPlayer extends Application {
 
     private static Stage stage;
 
@@ -19,7 +19,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        App.stage = stage;
+        MidiPlayer.stage = stage;
         FXMLLoader loader = new FXMLLoader(getClass().getResource(FXML_PATH));
         Parent root = loader.load();
 
