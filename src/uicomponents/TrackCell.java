@@ -13,7 +13,7 @@ import javafx.scene.control.ListCell;
 public class TrackCell extends ListCell<Track> {
 
     private Parent root;
-    private TrackCellViewController editController;
+    private TrackCellViewEditController editController;
     private TrackCellViewPlayController playController;
     private FXMLLoader loader;
     private Project project;

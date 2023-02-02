@@ -16,7 +16,7 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.stage.FileChooser;
 
-public class TrackCellViewController implements Initializable {
+public class TrackCellViewEditController implements Initializable {
 
     /* FXML */
     @FXML

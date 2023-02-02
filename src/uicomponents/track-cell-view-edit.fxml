@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane maxHeight="60.0" maxWidth="744.0" minHeight="60.0" minWidth="744.0" prefHeight="60.0" prefWidth="744.0" stylesheets="@../resources/style.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uicomponents.TrackCellViewController">
+<Pane maxHeight="60.0" maxWidth="744.0" minHeight="60.0" minWidth="744.0" prefHeight="60.0" prefWidth="744.0" stylesheets="@../resources/style.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uicomponents.TrackCellViewEditController">
    <children>
       <HBox alignment="CENTER_LEFT" prefHeight="60.0" prefWidth="744.0" spacing="10.0">
          <children>
