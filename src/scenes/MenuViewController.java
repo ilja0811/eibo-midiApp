@@ -1,4 +1,5 @@
 package scenes;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -16,22 +17,25 @@ public class MenuViewController implements Initializable {
     @FXML
     private Button newProjectButton;
 
+    private final String FXML_PATH = "project-view.fxml";
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         newProjectButton.setOnAction(event -> {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("project-view.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(FXML_PATH));
                 Parent root;
                 root = loader.load();
 
                 // Create the new scene
                 Scene newScene = new Scene(root, 800, 450);
-        
+
                 // Get the current stage and set the new scene
                 Stage stage = (Stage) newProjectButton.getScene().getWindow();
                 stage.setScene(newScene);
-                
-                // close all open business resources (synth, midi device, etc.) when closing application
+
+                // close all open business resources (synth, midi device, etc.) when closing
+                // application
                 stage.setOnCloseRequest(windowEvent -> {
                     ProjectViewController controller = loader.getController();
                     controller.exit();
@@ -40,6 +44,6 @@ public class MenuViewController implements Initializable {
                 e.printStackTrace();
             }
         });
-        
+
     }
 }

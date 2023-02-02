@@ -7,7 +7,7 @@
     -grey: #c3c3c5;
     -dark-grey: #8c8c8e;
     -light-grey: #dddddf;
-    -gradient: linear-gradient(to bottom left, #845EC2, #00C9A7);
+    -gradient: linear-gradient(to bottom right, #911DAC, #2BC3CB);
 
     -fx-border-style: none;
     -fx-border-width: 0;
@@ -15,7 +15,8 @@
 }
 
 .button,
-.toggle-button {
+.toggle-button,
+.choice-box {
     -fx-background-color: -light-grey;
     -fx-text-fill: -black;
     -fx-border-color: none;
@@ -24,16 +25,17 @@
     -fx-cursor: hand;
 }
 
-.ctrl-button {
-    -fx-background-color: -grey;
-}
-
 .button:hover,
 .button:focus,
 .toggle-button:hover,
-.toggle-button:focus {
-    -fx-background-color: -black;
-    -fx-text-fill: -white;
+.toggle-button:focus,
+.choice-box:hover,
+.choice-box:focus {
+    -fx-background-color: -grey;
+}
+
+.menu-btn {
+    -fx-background-color: -white;
 }
 
 .track-label {
@@ -43,6 +45,10 @@
 
 .tab-pane {
     -fx-background-color: -white;
+}
+
+.list-cell {
+    -fx-padding: 0;
 }
 
 .list-view {
@@ -68,21 +74,8 @@
 }
 
 .choice-box {
-    -fx-background-color: -light-grey;
     -fx-cursor: hand;
     -fx-mark-color: -black;
-    -fx-background-radius: 5;
-}
-
-.choice-box:hover,
-.choice-box:focus {
-    -fx-background-color: -black;
-    -fx-mark-color: -white;
-}
-
-.choice-box:focus .label,
-.choice-box:hover .label {
-    -fx-text-fill: -white;
 }
 
 .choice-box .context-menu {

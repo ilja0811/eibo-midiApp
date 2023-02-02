@@ -11,10 +11,11 @@ import java.util.Map;
 import javax.sound.midi.*;
 import javax.sound.midi.MidiDevice.Info;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleLongProperty;
 
-public class FruityProject {
+public class Project {
 
     private Sequence sequence;
     private Synthesizer synth;
@@ -26,17 +27,22 @@ public class FruityProject {
     private MidiInputReceiver receiver;
     private List<MidiDevice.Info> validMidisInfos;
 
-    private MidiChannel channel;
+    private MidiChannel deviceMidiChannel;
 
     private SimpleFloatProperty bpm;
     private SimpleLongProperty length;
     private SimpleLongProperty pos;
+    private SimpleBooleanProperty playing;
+    private SimpleBooleanProperty playbackEnded;
 
     private Map<Track, TrackInfo> tracks;
     private Map<Track, TrackInfo> validTracks;
-    private final float defaultBPM = 140;
+    private boolean tracksSaved;
 
-    public FruityProject() {
+    private final float DEFAULT_BPM = 140;
+    private final int MIDI_CHANNEL = 15; // value between 0-15
+
+    public Project() {
         try {
             sequence = new Sequence(Sequence.PPQ, 480);
             synth = MidiSystem.getSynthesizer();
@@ -46,14 +52,17 @@ public class FruityProject {
             synth.loadAllInstruments(soundbank);
             instruments = synth.getLoadedInstruments();
 
-            // Get a MIDI channel
-            channel = synth.getChannels()[10];
+            // Get a MIDI channel (0-15)
+            deviceMidiChannel = synth.getChannels()[MIDI_CHANNEL];
 
             sequencer = MidiSystem.getSequencer();
 
             bpm = new SimpleFloatProperty();
             length = new SimpleLongProperty();
             pos = new SimpleLongProperty();
+            playing = new SimpleBooleanProperty();
+            playbackEnded = new SimpleBooleanProperty();
+            playing.set(false);
 
             bpm.addListener((observable, oldValue, newValue) -> {
                 sequencer.setTempoInBPM(newValue.intValue());
@@ -65,7 +74,7 @@ public class FruityProject {
                 }
             });
 
-            setBpm(defaultBPM);
+            setBpm(DEFAULT_BPM);
 
             // listener to check if sequencer is done running
             sequencer.addMetaEventListener(new MetaEventListener() {
@@ -73,6 +82,9 @@ public class FruityProject {
                 public void meta(MetaMessage meta) {
                     if (meta.getType() == 47) {
                         // end of the sequence has been reached
+                        playing.set(false);
+                        pos.set(0);
+                        playbackEnded.set(true);
                         sequencer.close();
                     }
                 }
@@ -80,6 +92,7 @@ public class FruityProject {
 
             tracks = new HashMap<>();
             validTracks = new HashMap<>();
+            tracksSaved = false;
         } catch (MidiUnavailableException | InvalidMidiDataException e) {
             e.printStackTrace();
         }
@@ -123,10 +136,28 @@ public class FruityProject {
         }
     }
 
-    public void loadTrackMidi(Track track, String midiPath) {
+    public void loadMIDIfile(Track track, String midiPath) {
         try {
             Sequence seq = MidiSystem.getSequence(new File(midiPath));
             tracks.get(track).setMidiPath(midiPath);
+
+            /*
+             * add all events from track except for instrument changes (=program
+             * changes)
+             */
+            List<MidiEvent> toRemove = new ArrayList<>();
+            for (int i = 0; i < track.size(); i++) {
+                MidiEvent event = track.get(i);
+                if (!(event.getMessage() instanceof ShortMessage &&
+                        ((ShortMessage) event.getMessage()).getCommand() == ShortMessage.PROGRAM_CHANGE)) {
+                    toRemove.add(event);
+                }
+            }
+
+            // remove all events from track
+            for (MidiEvent event : toRemove) {
+                track.remove(event);
+            }
 
             for (Track t : seq.getTracks()) {
                 // Iterate through the events in the curr track
@@ -143,7 +174,7 @@ public class FruityProject {
 
     public void startRunningThread() {
         new Thread(() -> {
-            while (isPlaying()) {
+            while (playing.get()) {
                 if (bpm().get() == 0) {
                     pos.set(0);
                 } else {
@@ -155,11 +186,15 @@ public class FruityProject {
     }
 
     public void play() {
-        if (getValidTracks().size() != 0) {
+        if (tracksSaved && !getValidTracks().isEmpty()) {
             try {
+                playbackEnded.set(false);
+
                 sequencer.open();
                 sequencer.setSequence(sequence);
+                sequencer.setTempoInBPM(bpm.get());
 
+                playing.set(true);
                 length.set((long) ((sequencer.getTickLength()
                         / (sequence.getResolution() * (sequencer.getTempoInBPM() / 60)))));
 
@@ -180,14 +215,15 @@ public class FruityProject {
             MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
             validMidisInfos = new ArrayList<>();
 
+            MidiDevice currDevice;
             // Evaluate only valid MIDIs that have MIDI OUT PORT
             for (int i = 0; i < infos.length; i++) {
-                device = MidiSystem.getMidiDevice(infos[i]);
-                device.open();
-                if (device.getMaxTransmitters() != 0) {
+                currDevice = MidiSystem.getMidiDevice(infos[i]);
+                currDevice.open();
+                if (currDevice.getMaxTransmitters() != 0) {
                     validMidisInfos.add(infos[i]);
                 }
-                device.close();
+                currDevice.close();
             }
 
             return validMidisInfos;
@@ -203,7 +239,7 @@ public class FruityProject {
             device.open();
 
             // Create a listener for MIDI messages
-            receiver = new MidiInputReceiver(channel);
+            receiver = new MidiInputReceiver(deviceMidiChannel);
             device.getTransmitter().setReceiver(receiver);
         } catch (MidiUnavailableException e) {
             e.printStackTrace();
@@ -218,11 +254,8 @@ public class FruityProject {
         return sequencer.getTrackMute(Arrays.asList(sequence.getTracks()).indexOf(track));
     }
 
-    public boolean isPlaying() {
-        return sequencer != null && sequencer.isRunning();
-    }
-
     public void pause() {
+        playing.set(false);
         sequencer.stop();
     }
 
@@ -235,7 +268,12 @@ public class FruityProject {
     }
 
     public void stop() {
+        playing.set(false);
         sequencer.close();
+    }
+
+    public void changeReceiverInstrument(int instrIndex) {
+        receiver.changeInstrument(instrIndex);
     }
 
     /*
@@ -245,6 +283,8 @@ public class FruityProject {
      */
     private class MidiInputReceiver implements Receiver {
         private MidiChannel channel;
+        private int lastNote;
+        private Instrument instrument;
 
         public MidiInputReceiver(MidiChannel channel) {
             this.channel = channel;
@@ -255,6 +295,7 @@ public class FruityProject {
                 ShortMessage shortMessage = (ShortMessage) message;
                 int command = shortMessage.getCommand();
                 int note = shortMessage.getData1();
+                lastNote = note;
 
                 if (command == ShortMessage.NOTE_ON) {
                     int velocity = shortMessage.getData2();
@@ -263,6 +304,18 @@ public class FruityProject {
                     channel.noteOff(note);
                 }
             }
+        }
+
+        public void changeInstrument(int instrIndex) {
+            // because if instrument is changed while playing notes, note won't
+            // automatically cut off and keep ringing for eternity
+            channel.noteOff(lastNote);
+            instrument = instruments[instrIndex];
+            channel.programChange(instrument.getPatch().getProgram());
+        }
+
+        public Instrument getInstrument() {
+            return instrument;
         }
 
         @Override
@@ -291,11 +344,35 @@ public class FruityProject {
         return length;
     }
 
+    public SimpleBooleanProperty playing() {
+        return playing;
+    }
+
+    public SimpleBooleanProperty playbackEnded() {
+        return playbackEnded;
+    }
+
     /*
      * Getters and Setters
      * -----------------------------------------------------------------------------
      * -----------------------------------------------------------------------------
      */
+    public MidiDevice getDevice() {
+        return device;
+    }
+
+    public Instrument getDeviceInstrument() {
+        return receiver.getInstrument();
+    }
+
+    public MidiInputReceiver getReceiver() {
+        return receiver;
+    }
+
+    public void setTracksSaved(boolean b) {
+        tracksSaved = b;
+    }
+
     public Map<Track, TrackInfo> getTracks() {
         return tracks;
     }
@@ -304,7 +381,7 @@ public class FruityProject {
         validTracks.clear();
 
         tracks.forEach((k, v) -> {
-            if (!v.isNull()) {
+            if (v.isValid()) {
                 validTracks.put(k, v);
             }
         });

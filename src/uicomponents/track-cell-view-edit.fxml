@@ -7,9 +7,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane minHeight="-Infinity" prefHeight="50.0" prefWidth="744.0" stylesheets="@../resources/style.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uicomponents.TrackCellViewController">
+<Pane maxHeight="60.0" maxWidth="744.0" minHeight="60.0" minWidth="744.0" prefHeight="60.0" prefWidth="744.0" stylesheets="@../resources/style.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uicomponents.TrackCellViewController">
    <children>
-      <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="744.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" prefHeight="60.0" prefWidth="744.0" spacing="10.0">
          <children>
             <Label fx:id="trackIndexLabel" alignment="CENTER" maxWidth="15.0" minWidth="15.0" text="#" textAlignment="CENTER">
                <HBox.margin>
@@ -18,7 +18,7 @@
             </Label>
             <HBox alignment="CENTER_LEFT" spacing="15.0">
                <children>
-                  <Label fx:id="presetName" minWidth="-Infinity" prefHeight="30.0" prefWidth="250.0" styleClass="track-label" text="Track">
+                  <Label fx:id="trackLabel" minWidth="-Infinity" prefHeight="30.0" prefWidth="250.0" styleClass="track-label" text="Track">
                      <padding>
                         <Insets left="10.0" right="10.0" />
                      </padding>
@@ -28,7 +28,7 @@
                         <Insets />
                      </HBox.margin>
                   </ChoiceBox>
-                  <Button fx:id="midiButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="259.0" text="Import MIDI" />
+                  <Button fx:id="loadMidiButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="259.0" text="Import MIDI" />
                </children>
             </HBox>
          </children>

@@ -18,7 +18,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="800.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scenes.ProjectViewController">
+<TabPane fx:id="tabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="800.0" stylesheets="@../resources/style.css" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="scenes.ProjectViewController">
   <tabs>
     <Tab closable="false" text="Edit Mode">
          <content>
@@ -43,7 +43,7 @@
                         </ScrollPane>
                         <HBox alignment="CENTER" maxHeight="60.0" minHeight="60.0" prefWidth="200.0" spacing="10.0">
                            <children>
-                              <Button fx:id="menuButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false" styleClass="ctrl-button">
+                              <Button fx:id="menuButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
@@ -54,7 +54,7 @@
                                        </image>
                                     </ImageView>
                                  </graphic></Button>
-                              <Button fx:id="removeTrackButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false" styleClass="ctrl-button">
+                              <Button fx:id="removeTrackButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
@@ -65,7 +65,7 @@
                                        </image>
                                     </ImageView>
                                  </graphic></Button>
-                              <Button fx:id="addTrackButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false" styleClass="ctrl-button">
+                              <Button fx:id="addTrackButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
@@ -76,7 +76,7 @@
                                        </image>
                                     </ImageView>
                                  </graphic></Button>
-                              <Button fx:id="saveButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false" styleClass="ctrl-button">
+                              <Button fx:id="saveButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
@@ -97,7 +97,7 @@
                </children>
             </Pane>
          </content></Tab>
-      <Tab closable="false" text="Play Mode">
+      <Tab fx:id="playModeTab" closable="false" text="Play Mode">
          <content>
             <Pane>
                <children>
@@ -129,12 +129,31 @@
                                     </HBox>
                                  </children>
                               </HBox>
-                              <HBox alignment="CENTER_RIGHT" prefWidth="250.0">
+                              <HBox alignment="CENTER_RIGHT" prefWidth="250.0" spacing="10.0">
                                  <children>
-                                    <Button fx:id="loadMidiDevButton" mnemonicParsing="false" prefWidth="150.0" text="Load MIDI device">
+                                    <Button fx:id="changeInstrButtonDev" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="75.0" mnemonicParsing="false">
                                        <font>
                                           <Font size="14.0" />
                                        </font>
+                                       <graphic>
+                                          <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../assets/outline_piano_black_48dp.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                    <Button fx:id="loadMidiDevButton" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="75.0" mnemonicParsing="false">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <graphic>
+                                          <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../assets/round_settings_input_component_black_48dp.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
                                     </Button>
                                  </children>
                               </HBox>
@@ -142,7 +161,7 @@
                         </HBox>
                         <ScrollPane hbarPolicy="NEVER" prefHeight="175.0" prefWidth="760.0">
                            <content>
-                              <ListView fx:id="trackListviewPlay" prefHeight="173.0" prefWidth="760.0" />
+                              <ListView fx:id="trackListviewPlay" maxWidth="760.0" minWidth="760.0" prefHeight="173.0" prefWidth="760.0" />
                            </content>
                         </ScrollPane>
                         <HBox alignment="CENTER" prefHeight="130.0">
@@ -232,7 +251,7 @@
                                  <children>
                                     <HBox alignment="CENTER" prefHeight="30.0" spacing="5.0">
                                        <children>
-                                          <Button fx:id="playPauseButton" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" styleClass="ctrl-button">
+                                          <Button fx:id="playPauseButton" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false">
                                              <font>
                                                 <Font size="14.0" />
                                              </font>
@@ -244,7 +263,7 @@
                                                 </ImageView>
                                              </graphic>
                                           </Button>
-                                          <Button fx:id="stopButton" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" styleClass="ctrl-button">
+                                          <Button fx:id="stopButton" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false">
                                              <font>
                                                 <Font size="14.0" />
                                              </font>
@@ -279,8 +298,4 @@
          </content>
       </Tab>
   </tabs>
-   <stylesheets>
-      <URL value="@style.css" />
-      <URL value="@../resources/style.css" />
-   </stylesheets>
 </TabPane>

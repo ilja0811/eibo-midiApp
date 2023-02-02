@@ -1,6 +1,6 @@
 package uicomponents;
 
-import logic.FruityProject;
+import logic.Project;
 
 import java.io.IOException;
 
@@ -15,31 +15,43 @@ public class TrackCell extends ListCell<Track> {
     private Parent root;
     private TrackCellViewController editController;
     private TrackCellViewPlayController playController;
+    private FXMLLoader loader;
+    private Project project;
+    private TrackCellType type;
 
-    public TrackCell(FruityProject project, TrackCellType type) {
+    public TrackCell(Project project, TrackCellType type) {
+        this.project = project;
+        this.type = type;
+        try {
+            initLoader();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initLoader() throws IOException {
+        String fxmlPath;
+
         if (type == TrackCellType.EDIT) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("track-cell-view-edit.fxml"));
+            fxmlPath = "track-cell-view-edit.fxml";
 
-                root = loader.load();
-                editController = loader.getController();
-                editController.setTrackCell(this);
-                editController.setProject(project);
-                editController.loadDefaultTrackState();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            root = loader.load();
+            editController = loader.getController();
+
+            editController.setTrackCell(this);
+            editController.setProject(project);
+            editController.loadDefaultTrackState();
         } else {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("track-cell-view-play.fxml"));
+            fxmlPath = "track-cell-view-play.fxml";
 
-                root = loader.load();
-                playController = loader.getController();
-                playController.setTrackCell(this);
-                playController.setProject(project);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            root = loader.load();
+            playController = loader.getController();
+            
+            playController.setTrackCell(this);
+            playController.setProject(project);
+            playController.addPlaybackListener();
         }
     }
 

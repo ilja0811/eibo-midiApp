@@ -9,9 +9,9 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<Pane minHeight="-Infinity" prefHeight="50.0" prefWidth="744.0" stylesheets="@../resources/style.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uicomponents.TrackCellViewPlayController">
+<Pane maxHeight="60.0" maxWidth="744.0" minHeight="60.0" minWidth="744.0" prefHeight="60.0" prefWidth="744.0" stylesheets="@../resources/style.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uicomponents.TrackCellViewPlayController">
    <children>
-      <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="744.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" prefHeight="60.0" prefWidth="744.0" spacing="10.0">
          <children>
             <Label fx:id="trackIndexLabel" alignment="CENTER" maxWidth="15.0" minWidth="15.0" text="#" textAlignment="CENTER">
                <HBox.margin>

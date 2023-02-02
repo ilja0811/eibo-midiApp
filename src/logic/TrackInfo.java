@@ -1,4 +1,5 @@
 package logic;
+
 import java.io.File;
 
 public class TrackInfo {
@@ -14,8 +15,8 @@ public class TrackInfo {
         instrument = null;
     }
 
-    public boolean isNull() {
-        return midiPath == null;
+    public boolean isValid() {
+        return midiPath != null;
     }
 
     /*

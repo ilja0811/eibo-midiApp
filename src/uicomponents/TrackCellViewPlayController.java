@@ -1,4 +1,5 @@
 package uicomponents;
+
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -10,7 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import logic.FruityProject;
+import logic.Project;
 
 public class TrackCellViewPlayController implements Initializable {
 
@@ -29,23 +30,28 @@ public class TrackCellViewPlayController implements Initializable {
     @FXML
     private ImageView muteButtonImg;
 
-    private FruityProject project;
+    private Project project;
     private Track track;
     private TrackCell trackCell;
 
+    private static final String UNMUTE_IMG_PATH = "assets/outline_volume_up_white_48dp.png";
+    private static final String MUTE_IMG_PATH = "assets/outline_volume_off_white_48dp.png";
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        muteButton.setOnAction(event -> {
-            if (project.isPlaying()) {
-                if (project.trackIsMuted(track)) {
-                    project.muteTrack(track, false);
-                    muteButtonImg.setImage(new Image("assets/outline_volume_up_white_48dp.png"));
-                } else {
-                    project.muteTrack(track, true);
-                    muteButtonImg.setImage(new Image("assets/outline_volume_off_white_48dp.png"));
-                }
+        muteButton.setOnAction(event -> toggleMute());
+    }
+
+    public void toggleMute() {
+        if (project.playing().get()) {
+            if (project.trackIsMuted(track)) {
+                project.muteTrack(track, false);
+                muteButtonImg.setImage(new Image(UNMUTE_IMG_PATH));
+            } else {
+                project.muteTrack(track, true);
+                muteButtonImg.setImage(new Image(MUTE_IMG_PATH));
             }
-        });
+        }
     }
 
     public void updateTrack(Track track) {
@@ -65,8 +71,16 @@ public class TrackCellViewPlayController implements Initializable {
 
     }
 
-    public void setProject(FruityProject project) {
+    public void setProject(Project project) {
         this.project = project;
+    }
+
+    public void addPlaybackListener() {
+        project.playbackEnded().addListener((observarble, oldValue, newValue) -> {
+            if (newValue) {
+                muteButtonImg.setImage(new Image(UNMUTE_IMG_PATH));
+            }
+        });
     }
 
     public void setTrackCell(TrackCell trackCell) {
