@@ -48,7 +48,7 @@ public class TrackCell extends ListCell<Track> {
             loader = new FXMLLoader(getClass().getResource(fxmlPath));
             root = loader.load();
             playController = loader.getController();
-            
+
             playController.setTrackCell(this);
             playController.setProject(project);
             playController.addPlaybackListener();
