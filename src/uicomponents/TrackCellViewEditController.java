@@ -2,12 +2,13 @@ package uicomponents;
 
 import application.MidiPlayer;
 import logic.Project;
+import logic.TrackItem;
+
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 import javax.sound.midi.Instrument;
-import javax.sound.midi.Track;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -34,7 +35,7 @@ public class TrackCellViewEditController implements Initializable {
     /* ----- */
 
     private Project project;
-    private Track track;
+    private TrackItem trackItem;
 
     private TrackCell trackCell;
 
@@ -51,7 +52,7 @@ public class TrackCellViewEditController implements Initializable {
     private final String DEFAULT_INSTR_TEXT = "Default";
     private final String DEFAULT_TRACK_TEXT = "Track";
     private final String DEFAULT_MIDI_TEXT = "Import MIDI";
- 
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         loadMidiButton.setOnAction(event -> {
@@ -59,16 +60,16 @@ public class TrackCellViewEditController implements Initializable {
                 midiFile = midiFileChooser();
 
                 if (midiFile != null) {
-                    project.loadMIDIfile(track, midiFile.getAbsolutePath());
-                    trackLabel.setText(project.getTracks().get(track).getName());
-                    loadMidiButton.setText(project.getTracks().get(track).getMidiFile());
+                    trackItem.loadMIDIfile(midiFile.getAbsolutePath());
+                    trackLabel.setText(trackItem.getTrackName());
+                    loadMidiButton.setText(trackItem.getMidiFileName());
                 }
             });
         });
 
         instrDropdown.valueProperty().addListener(event -> {
             if (!instrDropdown.getValue().equals(DEFAULT_INSTR_TEXT)) {
-                project.loadTrackInstr(track, instrDropdown.getItems().indexOf(instrDropdown.getValue()));
+                trackItem.loadTrackInstr(instrDropdown.getItems().indexOf(instrDropdown.getValue()));
             }
         });
     }
@@ -81,41 +82,46 @@ public class TrackCellViewEditController implements Initializable {
         this.trackCell = trackCell;
     }
 
-    public void updateTrack(Track track) {
-        this.track = track;
+    public void updateTrackItem(TrackItem trackItem) {
+        this.trackItem = trackItem;
 
-        trackText = project.getTracks().get(track).getName();
-        if (isStringEmpty(trackText)) {
+        trackIndexLabel.setText(String.valueOf(trackCell.indexProperty().get() + 1));
+
+        trackText = trackItem.getTrackName();
+        instrText = trackItem.getInstrumentName();
+        midiText = trackItem.getMidiFileName();
+
+        if (trackText == null) {
             trackLabel.setText(DEFAULT_TRACK_TEXT);
         } else {
             trackLabel.setText(trackText);
         }
 
-        instrText = project.getTracks().get(track).getInstrument();
-        if (isStringEmpty(instrText)) {
+        if (instrText == null) {
             instrDropdown.setValue(DEFAULT_INSTR_TEXT);
         } else {
             instrDropdown.setValue(instrText);
         }
 
-        midiText = project.getTracks().get(track).getMidiFile();
-        if (isStringEmpty(midiText)) {
+        if (midiText == null) {
             loadMidiButton.setText(DEFAULT_MIDI_TEXT);
         } else {
             loadMidiButton.setText(midiText);
         }
-
-        trackIndexLabel.setText(String.valueOf(trackCell.indexProperty().get() + 1));
     }
 
-    private boolean isStringEmpty(String s) {
-        return s == null;
+    public void loadDefaultState() {
+        loadDropdown();
+        loadDefaultValues();
     }
 
-    public void loadDefaultTrackState() {
+    public void loadDropdown() {
         for (Instrument i : project.getInstruments()) {
             instrDropdown.getItems().add(i.getName());
         }
+    }
+
+    public void loadDefaultValues() {
         trackLabel.setText(DEFAULT_TRACK_TEXT);
         instrDropdown.setValue(DEFAULT_INSTR_TEXT);
         loadMidiButton.setText(DEFAULT_MIDI_TEXT);

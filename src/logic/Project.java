@@ -1,12 +1,7 @@
 package logic;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.sound.midi.*;
 import javax.sound.midi.MidiDevice.Info;
@@ -35,11 +30,11 @@ public class Project {
     private SimpleBooleanProperty playing;
     private SimpleBooleanProperty playbackEnded;
 
-    private Map<Track, TrackInfo> tracks;
-    private Map<Track, TrackInfo> validTracks;
+    private List<TrackItem> tracks;
+    private List<TrackItem> validTracks;
     private boolean tracksSaved;
 
-    private final float DEFAULT_BPM = 140;
+    private final int DEFAULT_BPM = 140;
     private final int MIDI_CHANNEL = 0; // value between 0-15
 
     public Project() {
@@ -65,7 +60,7 @@ public class Project {
             playing.set(false);
 
             bpm.addListener((observable, oldValue, newValue) -> {
-                sequencer.setTempoInBPM(newValue.intValue());
+                sequencer.setTempoInBPM(bpm.get());
                 if (newValue.intValue() == 0) {
                     length.set(0);
                 } else {
@@ -90,93 +85,31 @@ public class Project {
                 }
             });
 
-            tracks = new HashMap<>();
-            validTracks = new HashMap<>();
+            tracks = new ArrayList<>();
+            validTracks = new ArrayList<>();
             tracksSaved = false;
         } catch (MidiUnavailableException | InvalidMidiDataException e) {
-            e.printStackTrace();
+            System.out.println("An error occured when loading the project: " + e.getMessage());
         }
     }
 
-    public Track addTrack() {
-        Track newTrack = sequence.createTrack();
-        tracks.put(newTrack, new TrackInfo());
-        return newTrack;
+    public TrackItem addTrackItem() {
+        TrackItem track = new TrackItem(sequencer, sequence, instruments);
+        tracks.add(track);
+        return track;
     }
 
-    public void deleteTrack(Track track) {
-        sequence.deleteTrack(track);
+    public void deleteTrackItem(TrackItem track) {
+        track.delete();
         tracks.remove(track);
     }
 
-    public void loadTrackInstr(Track track, int instrIndex) {
-        Instrument instrument = instruments[instrIndex];
-        try {
-            // if there is already is a patch change event in the track, remove it
-            for (int i = 0; i < track.size(); i++) {
-                MidiEvent e = track.get(i);
-
-                if (e.getMessage() instanceof ShortMessage) {
-                    ShortMessage sm = (ShortMessage) e.getMessage();
-                    if (sm.getCommand() == ShortMessage.PROGRAM_CHANGE) {
-                        track.remove(e);
-                    }
-                }
-            }
-
-            // add patch change event (instrument change)
-            MidiEvent instrEvent = new MidiEvent(
-                    new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, instrument.getPatch().getProgram(),
-                            0),
-                    0);
-            track.add(instrEvent);
-
-            // add instrument to track info
-            tracks.get(track).setInstrument(instrument.getName());
-        } catch (InvalidMidiDataException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void loadMIDIfile(Track track, String midiPath) {
-        try {
-            Sequence seq = MidiSystem.getSequence(new File(midiPath));
-            tracks.get(track).setMidiPath(midiPath);
-
-            /*
-             * add all events from old track except for instrument changes (=program
-             * changes)
-             */
-            List<MidiEvent> toRemove = new ArrayList<>();
-            for (int i = 0; i < track.size(); i++) {
-                MidiEvent event = track.get(i);
-                if (!(event.getMessage() instanceof ShortMessage &&
-                        ((ShortMessage) event.getMessage()).getCommand() == ShortMessage.PROGRAM_CHANGE)) {
-                    toRemove.add(event);
-                }
-            }
-
-            // remove all note events from old track
-            for (MidiEvent event : toRemove) {
-                track.remove(event);
-            }
-
-            for (Track t : seq.getTracks()) {
-                // Iterate through the events in the curr track
-                for (int i = 0; i < t.size(); i++) {
-                    // Get the event and add it to newTrack
-                    MidiEvent event = t.get(i);
-                    track.add(event);
-                }
-            }
-        } catch (IOException | InvalidMidiDataException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void startRunningThread() {
+    public void startPosThread() {
         new Thread(() -> {
             while (playing.get()) {
+                // have to set tempo in thread because we couldn't extract tempo events from
+                // .midi file and have to overwrite tempo changes within the .midi file
+                sequencer.setTempoInBPM(bpm.get());
                 if (bpm().get() == 0) {
                     pos.set(0);
                 } else {
@@ -187,23 +120,33 @@ public class Project {
         }).start();
     }
 
+    public void togglePlayback() {
+        if (playing.get()) {
+            pause();
+        } else {
+            play();
+        }
+    }
+
     public void play() {
         if (tracksSaved && !getValidTracks().isEmpty()) {
             try {
                 playbackEnded.set(false);
 
-                sequencer.open();
                 sequencer.setSequence(sequence);
-                sequencer.setTempoInBPM(bpm.get());
+                sequencer.open();
+
+                length.set((long) ((sequencer.getTickLength()
+                        / (sequence.getResolution() * (bpm.get() / 60)))));
 
                 playing.set(true);
-                length.set((long) ((sequencer.getTickLength()
-                        / (sequence.getResolution() * (sequencer.getTempoInBPM() / 60)))));
-
                 sequencer.start();
-                startRunningThread();
+                // because first second plays in tempo of .midi file, tempo had to instantly be
+                // set again after start
+                sequencer.setTempoInBPM(bpm.get());
+                startPosThread();
             } catch (MidiUnavailableException | InvalidMidiDataException e) {
-                e.printStackTrace();
+                System.out.println("An error occured during playback: " + e.getMessage());
             }
         }
     }
@@ -230,7 +173,7 @@ public class Project {
 
             return validMidisInfos;
         } catch (MidiUnavailableException e) {
-            e.printStackTrace();
+            System.out.println("An error occured when loading your midi devices: " + e.getMessage());
         }
         return null;
     }
@@ -246,14 +189,6 @@ public class Project {
         } catch (MidiUnavailableException e) {
             e.printStackTrace();
         }
-    }
-
-    public void muteTrack(Track track, boolean b) {
-        sequencer.setTrackMute(Arrays.asList(sequence.getTracks()).indexOf(track), b);
-    }
-
-    public boolean trackIsMuted(Track track) {
-        return sequencer.getTrackMute(Arrays.asList(sequence.getTracks()).indexOf(track));
     }
 
     public void pause() {
@@ -334,7 +269,7 @@ public class Project {
      * -----------------------------------------------------------------------------
      * -----------------------------------------------------------------------------
      */
-    public SimpleLongProperty time() {
+    public SimpleLongProperty pos() {
         return pos;
     }
 
@@ -354,11 +289,19 @@ public class Project {
         return playbackEnded;
     }
 
+    public boolean isPlaying() {
+        return playing.get();
+    }
+
     /*
      * Getters and Setters
      * -----------------------------------------------------------------------------
      * -----------------------------------------------------------------------------
      */
+    public String getDefaultInstrumentName() {
+        return instruments[0].getName();
+    }
+
     public MidiDevice getDevice() {
         return device;
     }
@@ -375,23 +318,23 @@ public class Project {
         tracksSaved = b;
     }
 
-    public Map<Track, TrackInfo> getTracks() {
+    public List<TrackItem> getTracks() {
         return tracks;
     }
 
-    public Map<Track, TrackInfo> getValidTracks() {
+    public List<TrackItem> getValidTracks() {
         validTracks.clear();
 
-        tracks.forEach((k, v) -> {
-            if (v.isValid()) {
-                validTracks.put(k, v);
+        for (TrackItem t : tracks) {
+            if (t.isValid()) {
+                validTracks.add(t);
             }
-        });
+        }
         return validTracks;
     }
 
-    public void setBpm(float f) {
-        bpm.set(f);
+    public void setBpm(int tempo) {
+        bpm.set(tempo);
     }
 
     public void setTickPosition(long l) {

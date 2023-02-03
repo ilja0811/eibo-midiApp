@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javax.sound.midi.Instrument;
-import javax.sound.midi.Track;
 import javax.sound.midi.MidiDevice.Info;
 
 import application.MidiPlayer;
@@ -39,6 +38,7 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import logic.Project;
+import logic.TrackItem;
 import resources.HelperClass;
 import uicomponents.TrackCell;
 
@@ -49,19 +49,19 @@ public class ProjectViewController implements Initializable {
     private Button loadMidiDeviceButton;
 
     @FXML
-    private Button addTrackButton;
+    private Button addTrackItemButton;
 
     @FXML
-    private ListView<Track> trackListviewEdit;
+    private ListView<TrackItem> trackItemListviewEdit;
 
     @FXML
-    private ListView<Track> trackListviewPlay;
+    private ListView<TrackItem> trackItemListviewPlay;
 
     @FXML
-    private Button removeTrackButton;
+    private Button removeTrackItemButton;
 
     @FXML
-    private Button playPauseButton;
+    private Button playbackButton;
 
     @FXML
     private TabPane tabPane;
@@ -112,8 +112,8 @@ public class ProjectViewController implements Initializable {
     private final String PAUSE_IMG_PATH = "assets/round_pause_white_48dp.png";
     private final String MENU_FXML_PATH = "menu-view.fxml";
 
-    private ObservableList<Track> tracksEdit;
-    private ObservableList<Track> tracksPlay;
+    private ObservableList<TrackItem> trackItemsEdit;
+    private ObservableList<TrackItem> trackItemsPlay;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -122,18 +122,19 @@ public class ProjectViewController implements Initializable {
         /*
          * Tab 1 (Edit Mode)
          */
-        tracksEdit = trackListviewEdit.getItems();
+        trackItemsEdit = trackItemListviewEdit.getItems();
 
-        trackListviewEdit.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
+        trackItemListviewEdit.setCellFactory(new Callback<ListView<TrackItem>, ListCell<TrackItem>>() {
             @Override
-            public ListCell<Track> call(ListView<Track> param) {
+            public ListCell<TrackItem> call(ListView<TrackItem> param) {
                 return new TrackCell(project, TrackCellType.EDIT);
             }
         });
 
-        trackListviewEdit.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Track>() {
+        trackItemListviewEdit.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TrackItem>() {
             @Override
-            public void changed(ObservableValue<? extends Track> observable, Track oldTrack, Track newTrack) {
+            public void changed(ObservableValue<? extends TrackItem> observable, TrackItem oldTrack,
+                    TrackItem newTrack) {
                 // pass
             }
         });
@@ -146,25 +147,25 @@ public class ProjectViewController implements Initializable {
             });
         });
 
-        removeTrackButton.setOnAction(event -> {
+        removeTrackItemButton.setOnAction(event -> {
             Platform.runLater(() -> {
-                Track selectedTrack = trackListviewEdit.getSelectionModel().getSelectedItem();
-                tracksEdit.remove(selectedTrack);
-                project.deleteTrack(selectedTrack);
-                trackListviewEdit.refresh();
+                TrackItem selectedItem = trackItemListviewEdit.getSelectionModel().getSelectedItem();
+                trackItemsEdit.remove(selectedItem);
+                project.deleteTrackItem(selectedItem);
+                trackItemListviewEdit.refresh();
             });
 
         });
 
-        addTrackButton.setOnAction(event -> {
+        addTrackItemButton.setOnAction(event -> {
             Platform.runLater(() -> {
-                tracksEdit.add(project.addTrack());
+                trackItemsEdit.add(project.addTrackItem());
             });
         });
 
         saveButton.setOnAction(event -> {
             Platform.runLater(() -> {
-                tracksPlay.clear();
+                trackItemsPlay.clear();
                 showTracksSavedAlert();
             });
         });
@@ -172,34 +173,31 @@ public class ProjectViewController implements Initializable {
         /*
          * Tab 2 (Play Mode)
          */
-        tracksPlay = trackListviewPlay.getItems();
+        trackItemsPlay = trackItemListviewPlay.getItems();
 
-        trackListviewPlay.setCellFactory(new Callback<ListView<Track>, ListCell<Track>>() {
+        trackItemListviewPlay.setCellFactory(new Callback<ListView<TrackItem>, ListCell<TrackItem>>() {
             @Override
-            public ListCell<Track> call(ListView<Track> param) {
+            public ListCell<TrackItem> call(ListView<TrackItem> param) {
                 return new TrackCell(project, TrackCellType.PLAY);
             }
         });
 
-        playPauseButton.setOnAction(event -> {
-            if (project.playing().get()) {
-                project.pause();
-            } else {
-                project.play();
-                if (!project.playing().get()) {
-                    Platform.runLater(() -> {
-                        showPlaybackFailedAlert();
-                    });
+        playbackButton.setOnAction(event -> {
+            project.togglePlayback();
+
+            Platform.runLater(() -> {
+                if (!project.isPlaying() && project.getValidTracks().isEmpty()) {
+                    showPlaybackFailedAlert();
                 }
-            }
+            });
         });
 
         stopButton.setOnAction(event -> {
-            if (project.playing().get()) {
+            if (project.isPlaying()) {
                 project.stop();
 
                 Platform.runLater(() -> {
-                    resetPosBarView();
+                    resetPosSliderView();
                 });
             }
         });
@@ -210,7 +208,7 @@ public class ProjectViewController implements Initializable {
 
         bpmLabel.textProperty().bind(project.bpm().asString("%.0f"));
 
-        project.time().addListener((observable, oldValue, newValue) -> {
+        project.pos().addListener((observable, oldValue, newValue) -> {
             Platform.runLater(() -> {
                 posSlider.setValue(newValue.longValue());
                 posLabel.setText(HelperClass.formatTime(newValue.longValue()));
@@ -254,8 +252,8 @@ public class ProjectViewController implements Initializable {
                 project.setTracksSaved(false);
 
                 Platform.runLater(() -> {
-                    tracksPlay.clear();
-                    resetPosBarView();
+                    trackItemsPlay.clear();
+                    resetPosSliderView();
                 });
             }
         });
@@ -279,7 +277,7 @@ public class ProjectViewController implements Initializable {
     }
 
     public void refreshPlaybackView() {
-        if (project.playing().get()) {
+        if (project.isPlaying()) {
             playPauseButtonImg.setImage(new Image(PAUSE_IMG_PATH));
         } else {
             playPauseButtonImg.setImage(new Image(PLAY_IMG_PATH));
@@ -303,7 +301,7 @@ public class ProjectViewController implements Initializable {
     public void showTracksSavedAlert() {
         Alert alert;
         if (!project.getValidTracks().isEmpty()) {
-            tracksPlay.addAll(project.getValidTracks().keySet());
+            trackItemsPlay.addAll(project.getValidTracks());
             project.setTracksSaved(true);
 
             alert = new Alert(AlertType.INFORMATION,
@@ -358,9 +356,8 @@ public class ProjectViewController implements Initializable {
         }
     }
 
-    public void resetPosBarView() {
+    public void resetPosSliderView() {
         posLabel.setText(HelperClass.formatTime(0));
-        lengthLabel.setText(HelperClass.formatTime(0));
         posSlider.setValue(0);
     }
 

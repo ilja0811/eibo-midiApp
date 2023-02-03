@@ -1,16 +1,15 @@
 package uicomponents;
 
 import logic.Project;
+import logic.TrackItem;
 
 import java.io.IOException;
-
-import javax.sound.midi.Track;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.ListCell;
 
-public class TrackCell extends ListCell<Track> {
+public class TrackCell extends ListCell<TrackItem> {
 
     private Parent root;
     private TrackCellViewEditController editController;
@@ -41,7 +40,7 @@ public class TrackCell extends ListCell<Track> {
 
             editController.setTrackCell(this);
             editController.setProject(project);
-            editController.loadDefaultTrackState();
+            editController.loadDropdown();
         } else {
             fxmlPath = "track-cell-view-play.fxml";
 
@@ -56,15 +55,15 @@ public class TrackCell extends ListCell<Track> {
     }
 
     @Override
-    protected void updateItem(Track item, boolean empty) {
+    protected void updateItem(TrackItem item, boolean empty) {
         super.updateItem(item, empty);
 
         if (!empty) {
             if (editController != null) {
-                editController.updateTrack(item);
+                editController.updateTrackItem(item);
             }
             if (playController != null) {
-                playController.updateTrack(item);
+                playController.updateTrackItem(item);
             }
             this.setGraphic(root);
         } else {

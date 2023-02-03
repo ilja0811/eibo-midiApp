@@ -3,8 +3,6 @@ package uicomponents;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import javax.sound.midi.Track;
-
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -13,6 +11,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import logic.Project;
+import logic.TrackItem;
 
 public class TrackCellViewPlayController implements Initializable {
 
@@ -32,11 +31,13 @@ public class TrackCellViewPlayController implements Initializable {
     private ImageView muteButtonImg;
 
     private Project project;
-    private Track track;
+    private TrackItem trackItem;
     private TrackCell trackCell;
 
-    private static final String UNMUTE_IMG_PATH = "assets/outline_volume_up_white_48dp.png";
-    private static final String MUTE_IMG_PATH = "assets/outline_volume_off_white_48dp.png";
+    private static final String UNMUTED_IMG_PATH = "assets/outline_volume_up_white_48dp.png";
+    private static final String MUTED_IMG_PATH = "assets/outline_volume_off_white_48dp.png";
+
+    private final String DEFAULT_INSTR_TEXT = "Default";
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -45,37 +46,31 @@ public class TrackCellViewPlayController implements Initializable {
 
     public void toggleMute() {
         if (project.playing().get()) {
-            if (project.trackIsMuted(track)) {
-                project.muteTrack(track, false);
+            trackItem.mute();
 
-                Platform.runLater(() -> {
-                    muteButtonImg.setImage(new Image(UNMUTE_IMG_PATH));
-                });
-            } else {
-                project.muteTrack(track, true);
-
-                Platform.runLater(() -> {
-                    muteButtonImg.setImage(new Image(MUTE_IMG_PATH));
-                });
-            }
+            Platform.runLater(() -> {
+                if (trackItem.isMuted()) {
+                    muteButtonImg.setImage(new Image(MUTED_IMG_PATH));
+                } else {
+                    muteButtonImg.setImage(new Image(UNMUTED_IMG_PATH));
+                }
+            });
         }
     }
 
-    public void updateTrack(Track track) {
-        this.track = track;
-
-        String name = project.getTracks().get(track).getName();
-        String instrument = project.getTracks().get(track).getInstrument();
+    public void updateTrackItem(TrackItem trackItem) {
+        this.trackItem = trackItem;
 
         trackIndexLabel.setText(String.valueOf(trackCell.indexProperty().get() + 1));
 
+        String name = trackItem.getTrackName();
+        String instrument = trackItem.getInstrumentName();
         trackName.setText(name);
-        if (instrument != null) {
-            instrName.setText(instrument);
+        if (instrument == null) {
+            instrName.setText(DEFAULT_INSTR_TEXT);
         } else {
-            instrName.setText(project.getInstruments()[0].getName());
+            instrName.setText(instrument);
         }
-
     }
 
     public void setProject(Project project) {
@@ -85,7 +80,7 @@ public class TrackCellViewPlayController implements Initializable {
     public void addPlaybackListener() {
         project.playbackEnded().addListener((observarble, oldValue, newValue) -> {
             if (newValue) {
-                muteButtonImg.setImage(new Image(UNMUTE_IMG_PATH));
+                muteButtonImg.setImage(new Image(UNMUTED_IMG_PATH));
             }
         });
     }

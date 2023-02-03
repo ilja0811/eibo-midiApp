@@ -37,7 +37,7 @@
                         </HBox>
                         <ScrollPane fx:id="editScrollPane" hbarPolicy="NEVER" prefHeight="311.0" prefWidth="760.0">
                            <content>
-                              <ListView fx:id="trackListviewEdit" prefHeight="309.0" prefWidth="760.0" />
+                              <ListView fx:id="trackItemListviewEdit" prefHeight="309.0" prefWidth="760.0" />
                            </content>
                         </ScrollPane>
                         <HBox alignment="CENTER" maxHeight="60.0" minHeight="60.0" prefWidth="200.0" spacing="10.0">
@@ -53,7 +53,7 @@
                                        </image>
                                     </ImageView>
                                  </graphic></Button>
-                              <Button fx:id="removeTrackButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false">
+                              <Button fx:id="removeTrackItemButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
@@ -64,7 +64,7 @@
                                        </image>
                                     </ImageView>
                                  </graphic></Button>
-                              <Button fx:id="addTrackButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false">
+                              <Button fx:id="addTrackItemButton" maxHeight="35.0" maxWidth="35.0" minHeight="35.0" minWidth="35.0" mnemonicParsing="false">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
@@ -160,7 +160,7 @@
                         </HBox>
                         <ScrollPane hbarPolicy="NEVER" prefHeight="175.0" prefWidth="760.0">
                            <content>
-                              <ListView fx:id="trackListviewPlay" maxWidth="760.0" minWidth="760.0" prefHeight="173.0" prefWidth="760.0" />
+                              <ListView fx:id="trackItemListviewPlay" maxWidth="760.0" minWidth="760.0" prefHeight="173.0" prefWidth="760.0" />
                            </content>
                         </ScrollPane>
                         <HBox alignment="CENTER" prefHeight="130.0">
@@ -250,7 +250,7 @@
                                  <children>
                                     <HBox alignment="CENTER" prefHeight="30.0" spacing="5.0">
                                        <children>
-                                          <Button fx:id="playPauseButton" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false">
+                                          <Button fx:id="playbackButton" maxHeight="30.0" maxWidth="30.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false">
                                              <font>
                                                 <Font size="14.0" />
                                              </font>
