@@ -140,23 +140,33 @@ public class ProjectViewController implements Initializable {
 
         menuButton.setOnAction(event -> {
             project.closeAll();
-            loadMenuView();
+
+            Platform.runLater(() -> {
+                loadMenuView();
+            });
         });
 
         removeTrackButton.setOnAction(event -> {
-            Track selectedTrack = trackListviewEdit.getSelectionModel().getSelectedItem();
-            tracksEdit.remove(selectedTrack);
-            project.deleteTrack(selectedTrack);
-            trackListviewEdit.refresh();
+            Platform.runLater(() -> {
+                Track selectedTrack = trackListviewEdit.getSelectionModel().getSelectedItem();
+                tracksEdit.remove(selectedTrack);
+                project.deleteTrack(selectedTrack);
+                trackListviewEdit.refresh();
+            });
+
         });
 
         addTrackButton.setOnAction(event -> {
-            tracksEdit.add(project.addTrack());
+            Platform.runLater(() -> {
+                tracksEdit.add(project.addTrack());
+            });
         });
 
         saveButton.setOnAction(event -> {
-            tracksPlay.clear();
-            showTracksSavedAlert();
+            Platform.runLater(() -> {
+                tracksPlay.clear();
+                showTracksSavedAlert();
+            });
         });
 
         /*
@@ -177,7 +187,9 @@ public class ProjectViewController implements Initializable {
             } else {
                 project.play();
                 if (!project.playing().get()) {
-                    showPlaybackFailedAlert();
+                    Platform.runLater(() -> {
+                        showPlaybackFailedAlert();
+                    });
                 }
             }
         });
@@ -185,7 +197,10 @@ public class ProjectViewController implements Initializable {
         stopButton.setOnAction(event -> {
             if (project.playing().get()) {
                 project.stop();
-                resetPosBarView();
+
+                Platform.runLater(() -> {
+                    resetPosBarView();
+                });
             }
         });
 
@@ -196,43 +211,52 @@ public class ProjectViewController implements Initializable {
         bpmLabel.textProperty().bind(project.bpm().asString("%.0f"));
 
         project.time().addListener((observable, oldValue, newValue) -> {
-            posSlider.setValue(newValue.longValue());
-
             Platform.runLater(() -> {
+                posSlider.setValue(newValue.longValue());
                 posLabel.setText(HelperClass.formatTime(newValue.longValue()));
             });
         });
 
         project.length().addListener((observable, oldValue, newValue) -> {
-            posSlider.setMax(newValue.longValue());
-
             Platform.runLater(() -> {
+                posSlider.setMax(newValue.longValue());
                 lengthLabel.setText(HelperClass.formatTime(newValue.longValue()));
             });
         });
 
         project.playing().addListener((observable, oldValue, newValue) -> {
-            refreshPlaybackView();
+            Platform.runLater(() -> {
+                refreshPlaybackView();
+            });
         });
 
         changeDeviceInstrButton.setOnAction(event -> {
             if (project.getReceiver() != null) {
-                showDeviceChoiceDialog();
+                Platform.runLater(() -> {
+                    showDeviceChoiceDialog();
+                });
             } else {
-                showNoDeviceAlert();
+                Platform.runLater(() -> {
+                    showNoDeviceAlert();
+                });
             }
         });
 
         loadMidiDeviceButton.setOnAction(event -> {
-            showInstrumentChoiceDialog();
+            Platform.runLater(() -> {
+                showInstrumentChoiceDialog();
+            });
         });
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> {
             if (oldTab.equals(playModeTab)) {
                 project.stop();
                 project.setTracksSaved(false);
-                tracksPlay.clear();
-                resetPosBarView();
+
+                Platform.runLater(() -> {
+                    tracksPlay.clear();
+                    resetPosBarView();
+                });
             }
         });
     }

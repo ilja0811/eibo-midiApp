@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 import javax.sound.midi.Instrument;
 import javax.sound.midi.Track;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -54,13 +55,15 @@ public class TrackCellViewEditController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         loadMidiButton.setOnAction(event -> {
-            midiFile = midiFileChooser();
+            Platform.runLater(() -> {
+                midiFile = midiFileChooser();
 
-            if (midiFile != null) {
-                project.loadMIDIfile(track, midiFile.getAbsolutePath());
-                trackLabel.setText(project.getTracks().get(track).getName());
-                loadMidiButton.setText(project.getTracks().get(track).getMidiFile());
-            }
+                if (midiFile != null) {
+                    project.loadMIDIfile(track, midiFile.getAbsolutePath());
+                    trackLabel.setText(project.getTracks().get(track).getName());
+                    loadMidiButton.setText(project.getTracks().get(track).getMidiFile());
+                }
+            });
         });
 
         instrDropdown.valueProperty().addListener(event -> {

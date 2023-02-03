@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 
 import javax.sound.midi.Track;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -46,10 +47,16 @@ public class TrackCellViewPlayController implements Initializable {
         if (project.playing().get()) {
             if (project.trackIsMuted(track)) {
                 project.muteTrack(track, false);
-                muteButtonImg.setImage(new Image(UNMUTE_IMG_PATH));
+
+                Platform.runLater(() -> {
+                    muteButtonImg.setImage(new Image(UNMUTE_IMG_PATH));
+                });
             } else {
                 project.muteTrack(track, true);
-                muteButtonImg.setImage(new Image(MUTE_IMG_PATH));
+
+                Platform.runLater(() -> {
+                    muteButtonImg.setImage(new Image(MUTE_IMG_PATH));
+                });
             }
         }
     }
