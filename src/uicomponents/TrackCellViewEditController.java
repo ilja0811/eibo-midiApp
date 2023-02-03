@@ -48,10 +48,10 @@ public class TrackCellViewEditController implements Initializable {
     private final String FILE_CHOOSER_TITLE = "Select a MIDI file";
     private final String FILE_CHOOSER_INIT_DIR = "midis";
 
-    private final String DEFAULT_INSTR_TEXT = "Piano 1";
+    private final String DEFAULT_INSTR_TEXT = "Default";
     private final String DEFAULT_TRACK_TEXT = "Track";
     private final String DEFAULT_MIDI_TEXT = "Import MIDI";
-
+ 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         loadMidiButton.setOnAction(event -> {

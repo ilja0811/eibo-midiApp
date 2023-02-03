@@ -40,7 +40,7 @@ public class Project {
     private boolean tracksSaved;
 
     private final float DEFAULT_BPM = 140;
-    private final int MIDI_CHANNEL = 15; // value between 0-15
+    private final int MIDI_CHANNEL = 0; // value between 0-15
 
     public Project() {
         try {
@@ -129,8 +129,10 @@ public class Project {
                     new ShortMessage(ShortMessage.PROGRAM_CHANGE, 0, instrument.getPatch().getProgram(),
                             0),
                     0);
-            tracks.get(track).setInstrument(instrument.getName());
             track.add(instrEvent);
+
+            // add instrument to track info
+            tracks.get(track).setInstrument(instrument.getName());
         } catch (InvalidMidiDataException e) {
             e.printStackTrace();
         }
@@ -142,7 +144,7 @@ public class Project {
             tracks.get(track).setMidiPath(midiPath);
 
             /*
-             * add all events from track except for instrument changes (=program
+             * add all events from old track except for instrument changes (=program
              * changes)
              */
             List<MidiEvent> toRemove = new ArrayList<>();
@@ -154,7 +156,7 @@ public class Project {
                 }
             }
 
-            // remove all events from track
+            // remove all note events from old track
             for (MidiEvent event : toRemove) {
                 track.remove(event);
             }
