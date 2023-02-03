@@ -150,9 +150,12 @@ public class ProjectViewController implements Initializable {
         removeTrackItemButton.setOnAction(event -> {
             Platform.runLater(() -> {
                 TrackItem selectedItem = trackItemListviewEdit.getSelectionModel().getSelectedItem();
-                trackItemsEdit.remove(selectedItem);
-                project.deleteTrackItem(selectedItem);
-                trackItemListviewEdit.refresh();
+
+                if (selectedItem != null) {
+                    trackItemsEdit.remove(selectedItem);
+                    project.deleteTrackItem(selectedItem);
+                    trackItemListviewEdit.refresh();
+                }
             });
 
         });
